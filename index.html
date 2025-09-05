@@ -1324,18 +1324,39 @@
             
             document.getElementById('sound-toggle').addEventListener('click', toggleMusic);
 
+                        // === الكود المحدث والنهائي ===
             document.getElementById('start-game-btn').addEventListener('click', () => {
                 gameHasStarted = true;
                 const bgm = document.getElementById('background-music');
-                bgm.play().then(() => {
-                    if (isMusicMuted) bgm.pause();
-                }).catch(e => console.log("User interaction needed for audio"));
-                Object.values(gameSounds).forEach(sound => {
-                    sound.play().then(() => sound.pause());
+            
+                // محاولة تشغيل كل الأصوات لمرة واحدة لـ "فتح" إذن المتصفح
+                const allAudio = [bgm, ...Object.values(gameSounds)];
+                const playPromises = allAudio.map(audio => audio.play());
+            
+                Promise.all(playPromises).then(() => {
+                    // بعد أن يسمح المتصفح بالتشغيل
+                    allAudio.forEach(audio => {
+                        if (audio !== bgm) {
+                            audio.pause(); // أوقف كل المؤثرات الصوتية
+                            audio.currentTime = 0;
+                        }
+                    });
+            
+                    // الآن تحقق من حالة الموسيقى
+                    if (isMusicMuted) {
+                        bgm.pause(); // إذا كانت مكتومة، أوقفها
+                    } else {
+                        // إذا لم تكن مكتومة، دعها تعمل
+                        bgm.muted = false; // تأكد من أنها ليست مكتومة
+                    }
+            
+                }).catch(error => {
+                    // في حالة فشل التشغيل التلقائي (نادر بعد النقرة)
+                    console.warn("Audio playback failed to start, user may need to interact more.", error);
                 });
-
-                playSound('clickSound');
-
+                
+                playSound('clickSound'); // شغل صوت النقرة
+            
                 if (currentUser) {
                     navigateToUserPage();
                 } else {
@@ -3122,4 +3143,5 @@
     </script>
 </body>
 </html>
+
 
