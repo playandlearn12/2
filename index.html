@@ -457,6 +457,7 @@
         @keyframes particle-animation { 0% { transform: translate(0, 0); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)); opacity: 0; } }
 
         .draggable-word, .draggable { cursor: grab; }
+        .draggable-word.tappable { cursor: pointer; }
         .dragging { opacity: 0.5; background: #c7d2fe; transform: scale(1.1); }
         .drop-zone { min-height: 80px; border: 3px dashed var(--secondary-color); background: hsla(var(--secondary-hue), 50%, 80%, 0.3); }
         .activity-list .drag-over { border-top: 2px dashed var(--primary-color); }
@@ -565,25 +566,103 @@
             min-width: 50px;
         }
 
-        /* --- Matching Activity Styles --- */
-        .match-container-wrapper { position: relative; }
-        .match-container { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: center; }
-        .match-column { display: flex; flex-direction: column; gap: 1rem; }
+        /* --- Matching Activity Styles (MODIFIED) --- */
+        .match-container-wrapper { 
+            position: relative; 
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .match-container { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 2rem; 
+            align-items: center; 
+        }
+        .match-column { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 1rem; 
+        }
         .match-item { 
-            display: flex; align-items: center; justify-content: center; min-height: 80px;
-            padding: 0.5rem; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            border: 3px solid transparent; transition: all 0.3s ease; cursor: pointer;
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            min-height: 80px;
+            padding: 0.75rem; 
+            border-radius: 20px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 3px solid #eee; 
+            transition: all 0.2s ease; 
+            cursor: default;
             background-color: white;
         }
-        .match-item:hover { transform: scale(1.05); }
-        .match-item.selected { border-color: var(--accent-color); transform: scale(1.08); box-shadow: 0 0 15px hsla(var(--accent-hue), 95%, 60%, 0.5); }
-        .match-item.matched { cursor: default; background-color: #e0ffe0; border-color: var(--success-color); opacity: 0.7; }
-        .match-item img { max-height: 70px; max-width: 100%; object-fit: contain; }
-        .connector-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
-        .connector-svg line { stroke-width: 5; stroke-linecap: round; transition: all 0.3s ease; }
+        .match-column:first-child .match-item {
+             flex-direction: row;
+        }
+        body.arabic .match-column:first-child .match-item {
+            flex-direction: row-reverse;
+        }
+        .match-column:last-child .match-item {
+            flex-direction: row-reverse;
+        }
+        body.arabic .match-column:last-child .match-item {
+            flex-direction: row;
+        }
+        .match-item-content {
+            flex-grow: 1;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .connector-dot {
+            width: 30px;
+            height: 30px;
+            background-color: #d1d5db;
+            border: 4px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.15), 0 2px 3px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        .connector-dot:hover {
+            transform: scale(1.2);
+            background-color: #b0b5b9;
+        }
+        .match-item.selected {
+             transform: scale(1.05); 
+             border-color: var(--accent-color);
+        }
+        .match-item.selected .connector-dot {
+            background-color: var(--accent-color);
+            transform: scale(1.3);
+            box-shadow: 0 0 10px hsla(var(--accent-hue), 95%, 60%, 0.7);
+            animation: pulse 1.5s infinite;
+        }
+        .match-item.matched { 
+            cursor: default; 
+            opacity: 0.7; 
+            border-color: var(--success-color);
+        }
+        .match-item.matched .connector-dot {
+            background-color: var(--success-color);
+            cursor: default;
+        }
+        .match-item-content img { max-height: 70px; max-width: 100%; object-fit: contain; margin: 0 auto; }
+        .connector-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+        .connector-svg line { stroke-width: 8; stroke-linecap: round; transition: all 0.3s ease; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2)); }
         .connector-svg .correct-line { stroke: var(--success-color); }
         .connector-svg .incorrect-line { stroke: var(--danger-color); animation: fade-out 0.5s forwards; }
         @keyframes fade-out { to { opacity: 0; } }
+
+        @media (max-width: 600px) {
+            .match-container { gap: 1rem; }
+            .match-column { gap: 0.5rem; }
+            .match-item { min-height: 60px; padding: 0.5rem; }
+            .match-item-content { font-size: 1rem; }
+            .match-item-content img { max-height: 50px; }
+            .connector-dot { width: 25px; height: 25px; }
+        }
 
         /* --- Trace Activity Styles --- */
         .trace-container {
@@ -621,6 +700,94 @@
         }
         @keyframes trace-guide-anim {
             to { stroke-dashoffset: 0; }
+        }
+
+        /* --- Leaderboard Styles --- */
+        #leaderboard-modal .card {
+            max-width: 550px;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            border: 5px solid #fff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        #leaderboard-title {
+            font-family: 'Luckiest Guy', cursive;
+            font-size: 2.8rem;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
+        }
+        #leaderboard-list {
+            list-style: none;
+            padding: 0;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.8rem;
+            border-radius: 15px;
+            background-color: rgba(255,255,255,0.7);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            animation: slideInUp 0.5s ease-out forwards;
+            opacity: 0;
+        }
+        .leaderboard-item:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+        .leaderboard-item.current-user {
+            background: linear-gradient(90deg, #fde047, #facc15);
+            color: #4a3f00;
+            border: 3px solid #fff;
+            transform: scale(1.05);
+        }
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .leaderboard-rank {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            width: 40px;
+            flex-shrink: 0;
+            text-align: center;
+        }
+        .leaderboard-item:nth-child(1) .leaderboard-rank { color: #FFD700; text-shadow: 0 0 5px #ffd700; }
+        .leaderboard-item:nth-child(2) .leaderboard-rank { color: #C0C0C0; text-shadow: 0 0 5px #c0c0c0; }
+        .leaderboard-item:nth-child(3) .leaderboard-rank { color: #CD7F32; text-shadow: 0 0 5px #cd7f32; }
+
+        .leaderboard-name {
+            flex-grow: 1;
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-left: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        body.arabic .leaderboard-name { margin-left: 0; margin-right: 1rem; }
+        .leaderboard-score {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        #current-user-rank-info {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 15px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 0 0 var(--primary-dark);
         }
     </style>
 </head>
@@ -731,6 +898,7 @@
                 <h2 class="text-xl font-bold" style="color: var(--primary-dark);"><i class="fas fa-user-circle mr-2"></i><span data-i18n="welcomeStudent">Welcome,</span> <span id="student-name"></span></h2>
                 <div class="flex items-center gap-2 md:gap-4">
                     <div id="student-coins" class="text-lg md:text-xl font-bold text-yellow-600 bg-yellow-100 px-3 py-2 rounded-full shadow-inner"><i class="fas fa-coins mr-2"></i><span class="coins-count">0</span></div>
+                    <button id="leaderboard-btn" class="btn btn-sm md:btn-md" style="background: linear-gradient(45deg, #FFD700, #FFA500); color: white; box-shadow: 0 4px 0 0 #D4AF37;"><i class="fas fa-trophy"></i></button>
                     <button id="shop-btn" class="btn btn-sm md:btn-md" style="background: var(--accent-color); color: white; box-shadow: 0 4px 0 0 hsl(var(--accent-hue), 95%, 45%);"><i class="fas fa-store"></i></button>
                     <button id="back-to-grades" class="btn btn-secondary btn-sm md:btn-md"><i class="fas fa-exchange-alt"></i></button>
                     <button id="main-logout-btn" class="btn btn-danger btn-sm md:btn-md"><i class="fas fa-sign-out-alt"></i></button>
@@ -802,6 +970,11 @@
                     <textarea id="game-info-ar" class="input-field h-32" placeholder="أدخل معلومات اللعبة باللغة العربية"></textarea>
                 </div>
                 <button id="save-info-btn" class="btn btn-primary w-full"><i class="fas fa-save mr-2"></i> <span data-i18n="saveInfo">Save Game Info</span></button>
+            </div>
+             <div class="bg-white/90 p-8 rounded-2xl shadow-lg backdrop-blur-sm space-y-6 mb-8">
+                <h2 class="text-2xl font-bold" data-i18n="shopPriceManagement"><i class="fas fa-tags mr-2"></i>Shop Price Management</h2>
+                <div id="shop-price-manager" class="space-y-4 text-left"></div>
+                <button id="save-prices-btn" class="btn btn-primary w-full"><i class="fas fa-save mr-2"></i> <span data-i18n="savePrices">Save Prices</span></button>
             </div>
             <div class="bg-white/90 p-8 rounded-2xl shadow-lg backdrop-blur-sm space-y-6">
                 <h2 class="text-2xl font-bold" data-i18n="soundManagement"><i class="fas fa-volume-up mr-2"></i>Game Sound Management</h2>
@@ -937,10 +1110,21 @@
         </div>
     </div>
     
+    <div id="leaderboard-modal" class="modal hidden">
+        <div class="card">
+            <h2 id="leaderboard-title" data-i18n="leaderboard">Leaderboard</h2>
+            <ul id="leaderboard-list">
+                <!-- Leaderboard items will be injected here -->
+            </ul>
+            <div id="current-user-rank-info" class="hidden"></div>
+            <button id="close-leaderboard-btn" class="btn btn-secondary mt-6 w-full"><i class="fas fa-times mr-2"></i><span data-i18n="close">Close</span></button>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, getDocs, arrayUnion, writeBatch, increment, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, getDocs, arrayUnion, writeBatch, increment, query, orderBy, serverTimestamp, where, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         
         // --- Firebase Config ---
         const firebaseConfig = {
@@ -973,7 +1157,12 @@
                 multipleChoice: "Multiple Choice", matching: "Matching", arrangeWords: "Arrange Words", completeSentence: "Complete Sentence", traceWord: "Trace Word", pronunciation: "Pronunciation", colorWord: "Color the Word",
                 saveActivity: "Save Activity", confirmTitle: "Are You Sure?", yes: "Yes", no: "No",
                 excellent: "Excellent!", stageComplete: "Stage Complete! Amazing!", purchaseSuccess: "Purchase Successful!",
-                shop: "Shop", hint: "Hint", timeBoost: "Time Boost (+15s)", buy: "Buy", use: "Use",
+                shop: "Shop",
+                fiftyFiftyHint: "50/50 Hint",
+                timeBoost: "Time Boost (+15s)",
+                skipQuestion: "Skip Question",
+                freezeTime: "Freeze Time (10s)",
+                buy: "Buy", use: "Use",
                 correctSound: "Correct Answer", winSound: "Win Stage", wrongSound: "Wrong Answer", clickSound: "UI Click", timerUrgentSound: "Timer Urgent Tick", purchaseSound: "Purchase", coinSound: "Coin Collect", timesUpSound: "Time's Up",
                 backgroundMusic: "Background Music",
                 timeLimit: "Time Limit (seconds, 0 for none)", close: "Close", saveSounds: "Save Sound URLs", soundUrlPlaceholder: "Paste URL, or upload",
@@ -991,7 +1180,14 @@
                 saveConfig: "Save Configuration", configSaved: "Configuration saved successfully!",
                 githubConfigWarning: "GitHub upload is not configured. Please fill in your details in the CMS.",
                 itemType: "Item Type", itemValue: "Text or Image URL",
-                prompt: "Prompt", answer: "Answer", text: "Text"
+                prompt: "Prompt", answer: "Answer", text: "Text",
+                leaderboard: "Leaderboard",
+                yourRank: "Your Rank",
+                itemUsed: "Item Used!",
+                shopPriceManagement: "Shop Price Management", savePrices: "Save Prices",
+                indexRequiredTitle: "Database Index Required",
+                indexRequiredBody: "The leaderboard requires a special database index to work. Please click the link that appears in the developer console to create it. It might take a few minutes to build."
+
             },
             ar: {
                 loading: "جاري تحميل اللعبة...", welcome: "مغامرة تعلم اللغة الإنجليزية", email: "البريد الإلكتروني", password: "كلمة المرور", login: "دخول", createAccount: "إنشاء حساب جديد",
@@ -1008,7 +1204,12 @@
                 multipleChoice: "اختيار من متعدد", matching: "توصيل", arrangeWords: "ترتيب الكلمات", completeSentence: "أكمل الجملة", traceWord: "الكتابة على النقط", pronunciation: "النطق", colorWord: "تلوين الكلمة",
                 saveActivity: "حفظ النشاط", confirmTitle: "هل أنت متأكد؟", yes: "نعم", no: "لا",
                 excellent: "أحسنتِ!", stageComplete: "اكتملت المرحلة! رائعة!", purchaseSuccess: "تم الشراء بنجاح!",
-                shop: "المتجر", hint: "تلميح", timeBoost: "زيادة الوقت (+15 ث)", buy: "شراء", use: "استخدام",
+                shop: "المتجر",
+                fiftyFiftyHint: "تلميح 50/50",
+                timeBoost: "زيادة الوقت (+15 ث)",
+                skipQuestion: "تخطي السؤال",
+                freezeTime: "تجميد الوقت (10 ث)",
+                buy: "شراء", use: "استخدام",
                 correctSound: "صوت الإجابة الصحيحة", winSound: "صوت الفوز بالمرحلة", wrongSound: "صوت الإجابة الخاطئة", clickSound: "صوت النقر", timerUrgentSound: "صوت المؤقت الحرج", purchaseSound: "صوت الشراء", coinSound: "صوت النقود", timesUpSound: "صوت انتهاء الوقت",
                 backgroundMusic: "الموسيقى التصويرية",
                 timeLimit: "الوقت المحدد (بالثواني، 0 يعني بدون مؤقت)", close: "إغلاق", saveSounds: "حفظ روابط الأصوات", soundUrlPlaceholder: "الصق الرابط، أو ارفع ملف",
@@ -1026,7 +1227,13 @@
                 saveConfig: "حفظ الإعدادات", configSaved: "تم حفظ الإعدادات بنجاح!",
                 githubConfigWarning: "إعدادات رفع الملفات عبر جيت هاب غير مكتملة. الرجاء تعبئة بياناتك في لوحة التحكم.",
                 itemType: "نوع العنصر", itemValue: "نص أو رابط صورة",
-                prompt: "السؤال", answer: "الجواب", text: "نص"
+                prompt: "السؤال", answer: "الجواب", text: "نص",
+                leaderboard: "لوحة الصدارة",
+                yourRank: "ترتيبك هو",
+                itemUsed: "تم استخدام العنصر!",
+                shopPriceManagement: "إدارة أسعار المتجر", savePrices: "حفظ الأسعار",
+                indexRequiredTitle: "فهرس قاعدة البيانات مطلوب",
+                indexRequiredBody: "لوحة الصدارة تحتاج إلى فهرس خاص في قاعدة البيانات للعمل. يرجى الضغط على الرابط الذي يظهر في الـ console لإنشائه. قد يستغرق الأمر بضع دقائق."
             }
         };
         
@@ -1039,9 +1246,11 @@
         let currentStageObject = null, currentActivityIndex = 0, currentActivity = null, activityTimer = null, timeLeft = 0;
         let currentCmsGrade = 'first', curriculumData = {}, editingStageIndex = null, editingActivityIndex = null, currentStageIndexForActivity = null;
         let isGamePaused = false;
+        let isTimeFrozen = false;
         let gameHasStarted = false;
         let activeUrlInput = null;
         let gameInfoData = null;
+        let shopItemsData = {};
         
         // --- Core Functions (UI, Sound, Utils) ---
         function getTranslation(key) { 
@@ -1057,7 +1266,10 @@
         }
         
         async function loadGameData() {
-            await loadGameSounds();
+            await Promise.all([
+                loadGameSounds(),
+                loadShopItems()
+            ]);
             try {
                 const infoDocRef = doc(db, "settings", "gameInfo");
                 const infoDocSnap = await getDoc(infoDocRef);
@@ -1082,7 +1294,7 @@
                         if (soundInfo && soundInfo.url) {
                            if (key === 'backgroundMusic') {
                                bgm.src = soundInfo.url;
-                               bgm.volume = soundInfo.volume || 0.2; // --- التعديل: تم تغيير مستوى الصوت الافتراضي إلى 0.2
+                               bgm.volume = soundInfo.volume || 0.2; 
                            } else {
                                gameSounds[key] = new Audio(soundInfo.url);
                                gameSounds[key].preload = 'auto';
@@ -1419,13 +1631,6 @@
                     }
                 }
                 
-                // --- التعديل: تم حذف هذا الجزء الذي يقوم بتشغيل كل الأصوات ---
-                /*
-                Object.values(gameSounds).forEach(sound => {
-                    sound.play().then(() => { sound.pause(); sound.currentTime = 0; });
-                });
-                */
-
                 playSound('clickSound');
 
                 if (currentUser) {
@@ -1438,6 +1643,12 @@
             document.getElementById('close-info-btn').addEventListener('click', () => {
                 playSound('clickSound');
                 document.getElementById('info-modal').classList.add('hidden');
+            });
+            
+            document.getElementById('leaderboard-btn').addEventListener('click', showLeaderboard);
+            document.getElementById('close-leaderboard-btn').addEventListener('click', () => {
+                playSound('clickSound');
+                document.getElementById('leaderboard-modal').classList.add('hidden');
             });
 
             document.getElementById('pause-game-btn').addEventListener('click', pauseGame);
@@ -1495,6 +1706,7 @@
             
             document.getElementById('back-to-stages').addEventListener('click', () => { 
                 if (activityTimer) clearInterval(activityTimer); 
+                isTimeFrozen = false;
                 playSound('clickSound'); 
                 showPage('student-stages-page'); 
             });
@@ -1508,6 +1720,7 @@
             document.getElementById('cms-grade-select').addEventListener('change', (e) => loadCmsForGrade(e.target.value));
             document.getElementById('save-sounds-btn').addEventListener('click', handleSaveSounds);
             document.getElementById('save-info-btn').addEventListener('click', handleSaveGameInfo);
+            document.getElementById('save-prices-btn').addEventListener('click', handleSaveShopPrices);
             
             // Modals
             document.getElementById('save-stage-btn').addEventListener('click', handleSaveStage);
@@ -1536,7 +1749,7 @@
             const pausablePages = ['student-stages-page', 'vocabulary-page', 'game-page'];
             const currentPage = document.querySelector('.page:not(.hidden)');
             
-            if (document.hidden && currentPage && pausablePages.includes(currentPage.id)) {
+            if (document.hidden && currentPage && pausablePages.includes(currentPage.id) && !isGamePaused) {
                 pauseGame();
             }
         }
@@ -1555,20 +1768,26 @@
             document.getElementById('pause-modal').classList.add('hidden');
             if (!isMusicMuted) document.getElementById('background-music').play();
 
-            if (!document.getElementById('game-page').classList.contains('hidden') && currentActivity && currentActivity.data.timeLimit > 0) {
-                 activityTimer = setInterval(() => {
-                    timeLeft--;
-                    document.getElementById('timer-countdown').textContent = timeLeft;
-                    if (timeLeft > 0 && timeLeft <= 4) {
-                        playSound('timerUrgentSound');
-                        document.getElementById('timer-display').classList.add('low-time');
-                    }
-                    if (timeLeft <= 0) {
-                        clearInterval(activityTimer);
-                        handleTimeUp();
-                    }
-                }, 1000);
+            if (!document.getElementById('game-page').classList.contains('hidden') && currentActivity && currentActivity.data.timeLimit > 0 && !isTimeFrozen) {
+                 startTimer();
             }
+        }
+
+        function startTimer() {
+            if (activityTimer) clearInterval(activityTimer);
+            activityTimer = setInterval(() => {
+                if (isTimeFrozen || isGamePaused) return;
+                timeLeft--;
+                document.getElementById('timer-countdown').textContent = timeLeft;
+                if (timeLeft > 0 && timeLeft <= 4) {
+                    playSound('timerUrgentSound');
+                    document.getElementById('timer-display').classList.add('low-time');
+                }
+                if (timeLeft <= 0) {
+                    clearInterval(activityTimer);
+                    handleTimeUp();
+                }
+            }, 1000);
         }
 
         function showInfoModal() {
@@ -1715,6 +1934,7 @@
             loadCmsForGrade('first');
             loadSoundUrlManager();
             loadGameInfo();
+            loadShopPriceManager();
         }
 
         async function loadCmsForGrade(grade) {
@@ -1956,30 +2176,24 @@
             currentActivity = activity;
             const container = document.getElementById('activity-container');
             container.innerHTML = '<div class="loader"></div>';
+            
+            isTimeFrozen = false;
+            if (activityTimer) clearInterval(activityTimer);
+
             setTimeout(() => {
                 container.style.opacity = 0;
                 
                 const data = activity.data;
-                if (activityTimer) clearInterval(activityTimer);
+                
                 const timerDisplay = document.getElementById('timer-display');
                 if (data.timeLimit > 0) {
                     timeLeft = data.timeLimit;
                     document.getElementById('timer-countdown').textContent = timeLeft;
-                    timerDisplay.classList.remove('hidden');
-                    timerDisplay.classList.remove('low-time');
-                    activityTimer = setInterval(() => {
-                        timeLeft--;
-                        document.getElementById('timer-countdown').textContent = timeLeft;
-                        if (timeLeft > 0 && timeLeft <= 4) {
-                            playSound('timerUrgentSound');
-                            timerDisplay.classList.add('low-time');
-                        }
-                        if (timeLeft <= 0) {
-                            clearInterval(activityTimer);
-                            handleTimeUp();
-                        }
-                    }, 1000);
-                } else { timerDisplay.classList.add('hidden'); }
+                    timerDisplay.classList.remove('hidden', 'low-time');
+                    startTimer();
+                } else { 
+                    timerDisplay.classList.add('hidden'); 
+                }
                 
                 renderInventory();
                 let html = '';
@@ -2090,7 +2304,7 @@
                         drawingCanvas.addEventListener('touchmove', draw, { passive: false });
                         drawingCanvas.addEventListener('touchend', stopDrawing);
 
-                        container.querySelector('#activity-done-btn').addEventListener('click', handleCorrectAnswer);
+                        container.querySelector('#activity-done-btn').addEventListener('click', () => advanceToNextActivity());
                         break;
                         
                     case 'multiple_choice':
@@ -2209,28 +2423,33 @@
                         const svgContainer = container.querySelector('.connector-svg');
                         const pairs = [...data.pairs].map((p, i) => ({ ...p, id: i }));
 
-                        const renderMatchItem = item => item.type === 'image' ? `<img src="${item.value}" alt="match item">` : `<span>${item.value}</span>`;
+                        const renderMatchItem = item => item.type === 'image' 
+                            ? `<div class="match-item-content"><img src="${item.value}" alt="match item"></div>` 
+                            : `<div class="match-item-content"><span>${item.value}</span></div>`;
                         
-                        pairs.forEach(p => promptsContainer.innerHTML += `<div class="match-item" data-id="${p.id}">${renderMatchItem(p.prompt)}</div>`);
-                        [...pairs].sort(() => Math.random() - 0.5).forEach(p => answersContainer.innerHTML += `<div class="match-item" data-id="${p.id}">${renderMatchItem(p.answer)}</div>`);
+                        pairs.forEach(p => promptsContainer.innerHTML += `<div class="match-item" data-id="${p.id}">${renderMatchItem(p.prompt)}<div class="connector-dot"></div></div>`);
+                        [...pairs].sort(() => Math.random() - 0.5).forEach(p => answersContainer.innerHTML += `<div class="match-item" data-id="${p.id}"><div class="connector-dot"></div>${renderMatchItem(p.answer)}</div>`);
                         
                         let selectedPromptEl = null;
                         let matchedCount = 0;
 
-                        const allItems = container.querySelectorAll('.match-item');
-                        allItems.forEach(item => item.addEventListener('click', (e) => handleMatchClick(e.currentTarget)));
+                        const allDots = container.querySelectorAll('.connector-dot');
+                        allDots.forEach(dot => dot.addEventListener('click', (e) => handleMatchClick(e.currentTarget)));
 
-                        function handleMatchClick(item) {
+                        function handleMatchClick(dot) {
+                            const item = dot.closest('.match-item');
                             if (item.classList.contains('matched')) return;
+                            playSound('clickSound');
 
                             const isPrompt = item.parentElement.id === 'match-prompts';
+
                             if (isPrompt) {
                                 if (selectedPromptEl) selectedPromptEl.classList.remove('selected');
                                 selectedPromptEl = item;
                                 selectedPromptEl.classList.add('selected');
                             } else if (selectedPromptEl) {
                                 if (selectedPromptEl.dataset.id === item.dataset.id) {
-                                    drawConnection(selectedPromptEl, item, true);
+                                    drawConnection(selectedPromptEl.querySelector('.connector-dot'), dot, true);
                                     selectedPromptEl.classList.add('matched');
                                     item.classList.add('matched');
                                     selectedPromptEl.classList.remove('selected');
@@ -2240,7 +2459,7 @@
                                         setTimeout(handleCorrectAnswer, 1000);
                                     }
                                 } else {
-                                    drawConnection(selectedPromptEl, item, false);
+                                    drawConnection(selectedPromptEl.querySelector('.connector-dot'), dot, false);
                                     handleWrongAnswer();
                                     selectedPromptEl.classList.remove('selected');
                                     selectedPromptEl = null;
@@ -2248,15 +2467,15 @@
                             }
                         }
 
-                        function drawConnection(el1, el2, isCorrect) {
-                            const rect1 = el1.getBoundingClientRect();
-                            const rect2 = el2.getBoundingClientRect();
-                            const containerRect = container.getBoundingClientRect();
-
+                        function drawConnection(dot1, dot2, isCorrect) {
+                            const containerRect = svgContainer.getBoundingClientRect();
+                            const rect1 = dot1.getBoundingClientRect();
+                            const rect2 = dot2.getBoundingClientRect();
+                            
                             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                            line.setAttribute('x1', rect1.right - containerRect.left);
+                            line.setAttribute('x1', rect1.left + rect1.width / 2 - containerRect.left);
                             line.setAttribute('y1', rect1.top + rect1.height / 2 - containerRect.top);
-                            line.setAttribute('x2', rect2.left - containerRect.left);
+                            line.setAttribute('x2', rect2.left + rect2.width / 2 - containerRect.left);
                             line.setAttribute('y2', rect2.top + rect2.height / 2 - containerRect.top);
                             line.classList.add(isCorrect ? 'correct-line' : 'incorrect-line');
                             
@@ -2298,7 +2517,7 @@
                             <h2 class="activity-title">${questionText} ${questionAudioHtml}</h2>
                             <div id="drop-zone" class="drop-zone p-4 my-6 rounded-2xl flex flex-wrap gap-2 items-center justify-center"></div>
                             <div id="word-bank" class="p-4 flex flex-wrap gap-3 justify-center">
-                                ${words.map(w => `<div class="draggable-word p-3 px-5 bg-yellow-300 rounded-full font-bold shadow-md cursor-grab" draggable="true">${w}</div>`).join('')}
+                                ${words.map(w => `<div class="draggable-word tappable p-3 px-5 bg-yellow-300 rounded-full font-bold shadow-md" draggable="true">${w}</div>`).join('')}
                             </div>
                             <div class="flex gap-4 justify-center">
                                 <button id="check-sentence-btn" class="btn btn-primary mt-6">Check</button>
@@ -2309,6 +2528,20 @@
                         const dropZone = container.querySelector('#drop-zone');
                         const wordBank = container.querySelector('#word-bank');
                         
+                        function handleWordTap(e) {
+                            if (e.target.classList.contains('draggable-word')) {
+                                playSound('clickSound');
+                                const wordEl = e.target;
+                                if (wordEl.parentElement.id === 'word-bank') {
+                                    dropZone.appendChild(wordEl);
+                                } else {
+                                    wordBank.appendChild(wordEl);
+                                }
+                            }
+                        }
+                        wordBank.addEventListener('click', handleWordTap);
+                        dropZone.addEventListener('click', handleWordTap);
+
                         function resetWords() {
                             playSound('clickSound');
                             const wordsInDropZone = dropZone.querySelectorAll('.draggable-word');
@@ -2408,7 +2641,7 @@
                         drawCanvasTrace.addEventListener('touchend', stopTrace);
 
                         container.querySelector('#clear-trace-btn').onclick = () => drawCtxTrace.clearRect(0, 0, drawCanvasTrace.width, drawCanvasTrace.height);
-                        container.querySelector('#activity-done-btn').onclick = handleCorrectAnswer;
+                        container.querySelector('#activity-done-btn').onclick = () => advanceToNextActivity();
                         break;
                 }
 
@@ -2793,6 +3026,7 @@
         async function handleCorrectAnswer() {
             playSound('correctSound');
             if(activityTimer) clearInterval(activityTimer);
+            isTimeFrozen = false;
             
             showEncouragementModal(true);
             
@@ -2804,14 +3038,20 @@
                 updateCoinsDisplay();
             }, 1000);
             
-            setTimeout(() => {
-                currentActivityIndex++;
-                if (currentActivityIndex < currentStageObject.activities.length) {
-                    renderActivity(currentStageObject.activities[currentActivityIndex]);
-                } else {
-                    handleStageComplete();
-                }
-            }, 2800);
+            setTimeout(advanceToNextActivity, 2800);
+        }
+
+        function advanceToNextActivity(skipped = false) {
+             if (!skipped) playSound('correctSound');
+             if(activityTimer) clearInterval(activityTimer);
+             isTimeFrozen = false;
+
+             currentActivityIndex++;
+             if (currentActivityIndex < currentStageObject.activities.length) {
+                 renderActivity(currentStageObject.activities[currentActivityIndex]);
+             } else {
+                 handleStageComplete();
+             }
         }
         
         async function handleStageComplete() {
@@ -2850,6 +3090,7 @@
 
         function handleTimeUp() {
             if(activityTimer) clearInterval(activityTimer);
+            isTimeFrozen = false;
             playSound('timesUpSound');
             showToast('timesUp', 'error');
             triggerScreenFlash('red');
@@ -3004,9 +3245,27 @@
         
         // --- Shop Functions ---
         const shopItems = {
-            hint: { name_en: "Hint", name_ar: "تلميح", icon: "fa-lightbulb", price: 50 },
-            timeBoost: { name_en: "Time Boost (+15s)", name_ar: "زيادة الوقت (+15 ث)", icon: "fa-stopwatch", price: 30 }
+            fiftyFiftyHint: { name_en: "50/50 Hint", name_ar: "تلميح 50/50", icon: "fa-star-half-alt", price: 50 },
+            timeBoost: { name_en: "Time Boost (+15s)", name_ar: "زيادة الوقت (+15 ث)", icon: "fa-stopwatch", price: 30 },
+            freezeTime: { name_en: "Freeze Time (10s)", name_ar: "تجميد الوقت (10 ث)", icon: "fa-snowflake", price: 70 },
+            skipQuestion: { name_en: "Skip Question", name_ar: "تخطي السؤال", icon: "fa-forward", price: 100 }
         };
+
+        async function loadShopItems() {
+            try {
+                const shopDoc = await getDoc(doc(db, "settings", "shopItems"));
+                if (shopDoc.exists()) {
+                    const prices = shopDoc.data();
+                    for (const key in shopItems) {
+                        if (prices[key] !== undefined) {
+                            shopItems[key].price = prices[key];
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading shop prices, using defaults:", error);
+            }
+        }
         
         function openShop() {
             playSound('clickSound');
@@ -3034,17 +3293,21 @@
                 playSound('wrongSound');
                 return;
             }
+            
+            const userRef = doc(db, "users", currentUser.uid);
+            await updateDoc(userRef, { 
+                coins: increment(-price), 
+                [`inventory.${itemKey}`]: increment(1) 
+            });
+            
+            // Update local state immediately for instant UI feedback
+            currentUserData.coins -= price;
+            if (!currentUserData.inventory) currentUserData.inventory = {};
+            currentUserData.inventory[itemKey] = (currentUserData.inventory[itemKey] || 0) + 1;
+            
             playSound('purchaseSound');
             triggerPurchaseEffect();
             document.getElementById('shop-modal').classList.add('hidden');
-            
-            const userRef = doc(db, "users", currentUser.uid);
-            await updateDoc(userRef, { coins: increment(-price), [`inventory.${itemKey}`]: increment(1) });
-            
-            currentUserData.coins -= price;
-            currentUserData.inventory = currentUserData.inventory || {};
-            currentUserData.inventory[itemKey] = (currentUserData.inventory[itemKey] || 0) + 1;
-            
             updateCoinsDisplay();
             showToast('purchaseSuccess');
         }
@@ -3072,14 +3335,24 @@
             let itemUsed = false;
             switch(itemKey) {
                 case 'timeBoost':
-                    if (activityTimer) {
+                    if (activityTimer && !isTimeFrozen) {
                         timeLeft += 15;
                         document.getElementById('timer-countdown').textContent = timeLeft;
-                        showToast('Time boosted!');
                         itemUsed = true;
                     }
                     break;
-                case 'hint':
+                case 'freezeTime':
+                    if (activityTimer && !isTimeFrozen) {
+                        isTimeFrozen = true;
+                        document.getElementById('timer-display').style.background = 'linear-gradient(45deg, #2196F3, #64B5F6)';
+                        setTimeout(() => {
+                           isTimeFrozen = false;
+                           document.getElementById('timer-display').style.background = ''; // Revert to default
+                        }, 10000);
+                        itemUsed = true;
+                    }
+                    break;
+                case 'fiftyFiftyHint':
                     if (currentActivity.type === 'multiple_choice') {
                         const correct = currentActivity.data.correctAnswer;
                         const wrongOptions = Array.from(document.querySelectorAll('.option-btn'))
@@ -3089,18 +3362,30 @@
                                                 });
                         
                         if (wrongOptions.length > 1) {
-                           wrongOptions[0].style.display = 'none';
-                           showToast('Hint applied!');
+                           wrongOptions.sort(() => 0.5 - Math.random()); // Shuffle
+                           const numToHide = Math.ceil(wrongOptions.length / 2);
+                           for(let i=0; i < numToHide; i++) {
+                               wrongOptions[i].style.display = 'none';
+                           }
                            itemUsed = true;
                         }
                     }
                     break;
+                case 'skipQuestion':
+                    advanceToNextActivity(true); // pass true to indicate it's a skip
+                    itemUsed = true;
+                    break;
             }
 
             if (itemUsed) {
+                playSound('purchaseSound');
+                showToast('itemUsed');
                 currentUserData.inventory[itemKey]--;
                 await updateDoc(doc(db, "users", currentUser.uid), { [`inventory.${itemKey}`]: increment(-1) });
                 renderInventory();
+            } else {
+                 playSound('wrongSound');
+                 showToast('Cannot use this item now', 'error');
             }
         }
         
@@ -3253,10 +3538,97 @@
             }
         }
         
+        async function showLeaderboard() {
+            playSound('clickSound');
+            const modal = document.getElementById('leaderboard-modal');
+            const list = document.getElementById('leaderboard-list');
+            const rankInfo = document.getElementById('current-user-rank-info');
+            
+            list.innerHTML = '<div class="loader"></div>';
+            rankInfo.classList.add('hidden');
+            modal.classList.remove('hidden');
+
+            try {
+                const q = query(
+                    collection(db, 'users'), 
+                    where('role', '==', 'student'), 
+                    orderBy('coins', 'desc'), 
+                    limit(50)
+                );
+                const querySnapshot = await getDocs(q);
+                const users = [];
+                querySnapshot.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
+
+                if (users.length === 0) {
+                    list.innerHTML = `<p>${getTranslation('noPlayers')}</p>`;
+                    return;
+                }
+                
+                const top10Users = users.slice(0, 10);
+                list.innerHTML = top10Users.map((user, index) => `
+                    <li class="leaderboard-item ${user.id === currentUser.uid ? 'current-user' : ''}" style="animation-delay: ${index * 0.05}s">
+                        <span class="leaderboard-rank">${index + 1}</span>
+                        <span class="leaderboard-name">${user.username}</span>
+                        <span class="leaderboard-score"><i class="fas fa-coins"></i>${user.coins || 0}</span>
+                    </li>
+                `).join('');
+
+                const currentUserRank = users.findIndex(user => user.id === currentUser.uid);
+                if (currentUserRank !== -1) {
+                    rankInfo.textContent = `${getTranslation('yourRank')}: ${currentUserRank + 1}`;
+                    rankInfo.classList.remove('hidden');
+                } else {
+                    rankInfo.textContent = `${getTranslation('yourRank')}: 50+`;
+                    rankInfo.classList.remove('hidden');
+                }
+
+            } catch (error) {
+                console.error("Error loading leaderboard:", error);
+                if (error.code === 'failed-precondition') {
+                    list.innerHTML = `<div class="text-center p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded-lg">
+                        <p class="font-bold">${getTranslation('indexRequiredTitle')}</p>
+                        <p class="text-sm">${getTranslation('indexRequiredBody')}</p>
+                    </div>`;
+                } else {
+                    list.innerHTML = `<p class="text-red-500">${error.message}</p>`;
+                }
+            }
+        }
+        
         function updateMusicButtonState() {
              const toggle = document.getElementById('sound-toggle');
              toggle.classList.toggle('muted', isMusicMuted);
-             toggle.querySelector('i').className = isMusicMuted ? 'fas fa-music-slash' : 'fas fa-music';
+             toggle.querySelector('i').className = isMusicMuted ? 'fas fa-volume-mute' : 'fas fa-music';
+        }
+
+        async function loadShopPriceManager() {
+            const container = document.getElementById('shop-price-manager');
+            container.innerHTML = Object.entries(shopItems).map(([key, value]) => `
+                <div class="p-3 bg-gray-50 rounded-lg">
+                    <label for="price-${key}" class="font-semibold mb-2 flex items-center gap-2">
+                        <i class="fas ${value.icon} text-purple-500"></i>
+                        <span>${getTranslation(key)}</span>
+                    </label>
+                    <input type="number" id="price-${key}" class="input-field mb-0" value="${value.price}">
+                </div>`).join('');
+            updateLanguage();
+        }
+
+        async function handleSaveShopPrices() {
+            playSound('clickSound');
+            const pricesToSave = {};
+            document.querySelectorAll('#shop-price-manager input').forEach(input => {
+                const key = input.id.replace('price-', '');
+                pricesToSave[key] = parseInt(input.value) || 0;
+            });
+            try {
+                await setDoc(doc(db, "settings", "shopItems"), pricesToSave);
+                await loadShopItems(); // Reload prices into the game
+                showToast("Prices saved successfully!");
+            } catch (error) {
+                console.error("Error saving prices:", error);
+                showToast("Error saving prices.", "error");
+            }
         }
 
         // --- Initial Load ---
