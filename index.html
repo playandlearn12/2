@@ -570,15 +570,15 @@
             color: #334155;
         }
 
-        #file-history-modal .vocab-card { cursor: pointer; }
-        #file-history-modal .vocab-card h3 { font-size: 1rem; word-break: break-all; }
+        #media-library-modal .vocab-card { cursor: pointer; }
+        #media-library-modal .vocab-card h3 { font-size: 1rem; word-break: break-all; }
         .upload-container {
             display: grid;
             grid-template-columns: 1fr auto auto;
             gap: 0.5rem;
             align-items: center;
         }
-        .upload-btn, .history-btn {
+        .upload-btn, .library-btn {
             padding: 0.5rem;
             height: 100%;
             min-width: 50px;
@@ -1189,13 +1189,13 @@
         </div>
     </div>
 
-    <div id="file-history-modal" class="modal hidden">
+    <div id="media-library-modal" class="modal hidden">
          <div class="card w-full max-w-4xl">
-            <h2 class="text-2xl font-bold mb-4" data-i18n="fileHistory">File History</h2>
-            <div id="file-history-grid" class="vocab-grid max-h-[70vh] overflow-y-auto p-4">
+            <h2 class="text-2xl font-bold mb-4" data-i18n="mediaLibrary">Media Library</h2>
+            <div id="media-library-grid" class="vocab-grid max-h-[70vh] overflow-y-auto p-4">
                 <div class="loader"></div>
             </div>
-            <button id="close-history-btn" class="btn btn-secondary mt-6"><i class="fas fa-times mr-2"></i><span data-i18n="close">Close</span></button>
+            <button id="close-library-btn" class="btn btn-secondary mt-6"><i class="fas fa-times mr-2"></i><span data-i18n="close">Close</span></button>
         </div>
     </div>
     
@@ -1264,7 +1264,7 @@
                 questionAudio: "Question Audio URL (optional)", useTTS: "Use Auto-Voice for Question",
                 startGame: "Start Game", gameInfo: "Game Info", gamePaused: "Game Paused", resume: "Resume",
                 gameInfoManagement: "Game Info Management", saveInfo: "Save Game Info",
-                upload: "Upload", history: "History", fileHistory: "File History", uploading: "Uploading...",
+                uploadNew: "Upload New File", browse: "Browse Library", mediaLibrary: "Media Library", uploading: "Uploading...",
                 githubConfig: "GitHub Configuration", githubConfigNote: "These settings are required for the file upload feature and are saved locally in your browser.",
                 saveConfig: "Save Configuration", configSaved: "Configuration saved successfully!",
                 githubConfigWarning: "GitHub upload is not configured. Please fill in your details in the CMS.",
@@ -1275,7 +1275,10 @@
                 itemUsed: "Item Used!",
                 shopPriceManagement: "Shop Price Management", savePrices: "Save Prices",
                 indexRequiredTitle: "Database Index Required",
-                indexRequiredBody: "The leaderboard requires a special database index to work. Please click the link that appears in the developer console to create it. It might take a few minutes to build."
+                indexRequiredBody: "The leaderboard requires a special database index to work. Please click the link that appears in the developer console to create it. It might take a few minutes to build.",
+                duplicate: "Duplicate",
+                stageDuplicated: "Stage duplicated successfully!",
+                activityDuplicated: "Activity duplicated successfully!"
 
             },
             ar: {
@@ -1311,7 +1314,7 @@
                 questionAudio: "رابط صوت السؤال (اختياري)", useTTS: "استخدام الصوت التلقائي للسؤال",
                 startGame: "ابدأ اللعبة", gameInfo: "معلومات اللعبة", gamePaused: "اللعبة متوقفة مؤقتاً", resume: "استئناف",
                 gameInfoManagement: "إدارة معلومات اللعبة", saveInfo: "حفظ معلومات اللعبة",
-                upload: "رفع", history: "السجل", fileHistory: "سجل الملفات", uploading: "جاري الرفع...",
+                uploadNew: "رفع ملف جديد", browse: "تصفح المكتبة", mediaLibrary: "مكتبة الوسائط", uploading: "جاري الرفع...",
                 githubConfig: "إعدادات GitHub", githubConfigNote: "هذه الإعدادات مطلوبة لميزة رفع الملفات ويتم حفظها محلياً في متصفحك فقط.",
                 saveConfig: "حفظ الإعدادات", configSaved: "تم حفظ الإعدادات بنجاح!",
                 githubConfigWarning: "إعدادات رفع الملفات عبر جيت هاب غير مكتملة. الرجاء تعبئة بياناتك في لوحة التحكم.",
@@ -1322,7 +1325,10 @@
                 itemUsed: "تم استخدام العنصر!",
                 shopPriceManagement: "إدارة أسعار المتجر", savePrices: "حفظ الأسعار",
                 indexRequiredTitle: "فهرس قاعدة البيانات مطلوب",
-                indexRequiredBody: "لوحة الصدارة تحتاج إلى فهرس خاص في قاعدة البيانات للعمل. يرجى الضغط على الرابط الذي يظهر في الـ console لإنشائه. قد يستغرق الأمر بضع دقائق."
+                indexRequiredBody: "لوحة الصدارة تحتاج إلى فهرس خاص في قاعدة البيانات للعمل. يرجى الضغط على الرابط الذي يظهر في الـ console لإنشائه. قد يستغرق الأمر بضع دقائق.",
+                duplicate: "استنساخ",
+                stageDuplicated: "تم استنساخ المرحلة بنجاح!",
+                activityDuplicated: "تم استنساخ النشاط بنجاح!"
             }
         };
         
@@ -1827,8 +1833,8 @@
                 playSound('clickSound'); 
                 document.getElementById('shop-modal').classList.add('hidden'); 
             });
-            document.getElementById('close-history-btn').addEventListener('click', () => {
-                document.getElementById('file-history-modal').classList.add('hidden');
+            document.getElementById('close-library-btn').addEventListener('click', () => {
+                document.getElementById('media-library-modal').classList.add('hidden');
             });
         }
         
@@ -2059,8 +2065,9 @@
                                     ${stage.name}
                                 </h4>
                                 <div class="flex gap-2">
-                                    <button class="edit-stage-btn btn btn-secondary btn-sm" data-index="${index}"><i class="fas fa-edit"></i></button>
-                                    <button class="delete-stage-btn btn btn-danger btn-sm" data-index="${index}"><i class="fas fa-trash"></i></button>
+                                    <button class="edit-stage-btn btn btn-secondary btn-sm" data-index="${index}" title="${getTranslation('edit')}"><i class="fas fa-edit"></i></button>
+                                    <button class="duplicate-stage-btn btn btn-warning btn-sm" data-index="${index}" title="${getTranslation('duplicate')}"><i class="fas fa-copy"></i></button>
+                                    <button class="delete-stage-btn btn btn-danger btn-sm" data-index="${index}" title="${getTranslation('delete')}"><i class="fas fa-trash"></i></button>
                                 </div>
                             </div>
                             <h5 class="font-bold text-purple-700 mb-2">${getTranslation('vocabulary')}:</h5>
@@ -2072,8 +2079,9 @@
                                 <div class="flex justify-between items-center py-2 border-b draggable" draggable="true" data-activity-index="${actIndex}">
                                     <span><i class="fas fa-grip-vertical mr-2 text-gray-400"></i>${actIndex + 1}- ${getTranslation(act.type)}</span>
                                     <div>
-                                      <button class="edit-activity-btn text-blue-500 hover:text-blue-700 p-2" data-stage-index="${index}" data-activity-index="${actIndex}"><i class="fas fa-edit"></i></button>
-                                      <button class="delete-activity-btn text-red-500 hover:text-red-700 p-2" data-stage-index="${index}" data-activity-index="${actIndex}"><i class="fas fa-times"></i></button>
+                                      <button class="edit-activity-btn text-blue-500 hover:text-blue-700 p-2" data-stage-index="${index}" data-activity-index="${actIndex}" title="${getTranslation('edit')}"><i class="fas fa-edit"></i></button>
+                                      <button class="duplicate-activity-btn text-orange-500 hover:text-orange-700 p-2" data-stage-index="${index}" data-activity-index="${actIndex}" title="${getTranslation('duplicate')}"><i class="fas fa-copy"></i></button>
+                                      <button class="delete-activity-btn text-red-500 hover:text-red-700 p-2" data-stage-index="${index}" data-activity-index="${actIndex}" title="${getTranslation('delete')}"><i class="fas fa-times"></i></button>
                                     </div>
                                 </div>`).join('') : `<p class="text-gray-500 italic">${getTranslation('noActivities')}</p>`}
                             </div>
@@ -2088,12 +2096,41 @@
             document.getElementById('add-stage-btn').addEventListener('click', () => openStageModal(null));
             document.querySelectorAll('.edit-stage-btn').forEach(btn => btn.addEventListener('click', (e) => openStageModal(parseInt(e.currentTarget.dataset.index))));
             document.querySelectorAll('.delete-stage-btn').forEach(btn => btn.addEventListener('click', (e) => deleteStage(parseInt(e.currentTarget.dataset.index))));
+            document.querySelectorAll('.duplicate-stage-btn').forEach(btn => btn.addEventListener('click', (e) => duplicateStage(parseInt(e.currentTarget.dataset.index))));
             document.querySelectorAll('.add-activity-btn').forEach(btn => btn.addEventListener('click', (e) => openActivityModal(parseInt(e.currentTarget.dataset.stageIndex))));
             document.querySelectorAll('.edit-activity-btn').forEach(btn => btn.addEventListener('click', (e) => openActivityModalForEdit(parseInt(e.currentTarget.dataset.stageIndex), parseInt(e.currentTarget.dataset.activityIndex))));
             document.querySelectorAll('.delete-activity-btn').forEach(btn => btn.addEventListener('click', (e) => deleteActivity(parseInt(e.currentTarget.dataset.stageIndex), parseInt(e.currentTarget.dataset.activityIndex))));
+            document.querySelectorAll('.duplicate-activity-btn').forEach(btn => btn.addEventListener('click', (e) => duplicateActivity(parseInt(e.currentTarget.dataset.stageIndex), parseInt(e.currentTarget.dataset.activityIndex))));
             document.querySelectorAll('.edit-vocab-btn').forEach(btn => btn.addEventListener('click', (e) => openVocabModal(parseInt(e.currentTarget.dataset.stageIndex))));
             setupActivityDragAndDrop();
             setupStageDragAndDrop();
+        }
+        
+        async function duplicateStage(index) {
+            playSound('clickSound');
+            const originalStage = curriculumData.stages[index];
+            const newStage = JSON.parse(JSON.stringify(originalStage));
+            
+            newStage.name = `${originalStage.name} - Copy`;
+            newStage.id = `stage_${Date.now()}`;
+
+            curriculumData.stages.splice(index + 1, 0, newStage);
+            
+            await updateCurriculumInDb();
+            renderCmsEditor();
+            showToast('stageDuplicated');
+        }
+
+        async function duplicateActivity(stageIndex, activityIndex) {
+            playSound('clickSound');
+            const originalActivity = curriculumData.stages[stageIndex].activities[activityIndex];
+            const newActivity = JSON.parse(JSON.stringify(originalActivity));
+
+            curriculumData.stages[stageIndex].activities.splice(activityIndex + 1, 0, newActivity);
+
+            await updateCurriculumInDb();
+            renderCmsEditor();
+            showToast('activityDuplicated');
         }
         
         function setupStageDragAndDrop() {
@@ -2928,20 +2965,20 @@
                     </div>
                      <div class="upload-container">
                         <input type="text" placeholder="Image URL" class="input-field mb-0 vocab-image-url" value="${word.imageUrl || ''}">
-                        <button class="btn btn-primary upload-btn upload-btn-sm" data-type="image"><i class="fas fa-upload"></i></button>
-                        <button class="btn btn-secondary history-btn history-btn-sm" data-type="image"><i class="fas fa-history"></i></button>
+                        <button class="btn btn-primary upload-btn upload-btn-sm" data-type="image" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                        <button class="btn btn-secondary library-btn library-btn-sm" data-type="image" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
                     </div>
                     <div class="upload-container">
                         <input type="text" placeholder="Audio URL" class="input-field mb-0 vocab-audio-url" value="${word.audioUrl || ''}">
-                        <button class="btn btn-primary upload-btn upload-btn-sm" data-type="audio"><i class="fas fa-upload"></i></button>
-                        <button class="btn btn-secondary history-btn history-btn-sm" data-type="audio"><i class="fas fa-history"></i></button>
+                        <button class="btn btn-primary upload-btn upload-btn-sm" data-type="audio" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                        <button class="btn btn-secondary library-btn library-btn-sm" data-type="audio" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
                     </div>
                 </div>
             `).join('');
             
             container.querySelectorAll('.delete-vocab-btn').forEach(btn => btn.onclick = (e) => e.currentTarget.closest('.p-3').remove());
             container.querySelectorAll('.upload-btn').forEach(btn => btn.addEventListener('click', handleUploadClick));
-            container.querySelectorAll('.history-btn').forEach(btn => btn.addEventListener('click', handleHistoryClick));
+            container.querySelectorAll('.library-btn').forEach(btn => btn.addEventListener('click', handleBrowseLibraryClick));
         }
         
         function addVocabWordToEditor() {
@@ -2955,13 +2992,13 @@
                     </div>
                     <div class="upload-container">
                         <input type="text" placeholder="Image URL" class="input-field mb-0 vocab-image-url">
-                        <button class="btn btn-primary upload-btn upload-btn-sm" data-type="image"><i class="fas fa-upload"></i></button>
-                        <button class="btn btn-secondary history-btn history-btn-sm" data-type="image"><i class="fas fa-history"></i></button>
+                        <button class="btn btn-primary upload-btn upload-btn-sm" data-type="image" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                        <button class="btn btn-secondary library-btn library-btn-sm" data-type="image" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
                     </div>
                     <div class="upload-container">
                         <input type="text" placeholder="Audio URL" class="input-field mb-0 vocab-audio-url">
-                        <button class="btn btn-primary upload-btn upload-btn-sm" data-type="audio"><i class="fas fa-upload"></i></button>
-                        <button class="btn btn-secondary history-btn history-btn-sm" data-type="audio"><i class="fas fa-history"></i></button>
+                        <button class="btn btn-primary upload-btn upload-btn-sm" data-type="audio" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                        <button class="btn btn-secondary library-btn library-btn-sm" data-type="audio" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
                     </div>
                 </div>`;
             
@@ -2970,7 +3007,7 @@
             const newItem = container.lastElementChild;
             newItem.querySelector('.delete-vocab-btn').onclick = (e) => e.currentTarget.closest('.p-3').remove();
             newItem.querySelectorAll('.upload-btn').forEach(btn => btn.addEventListener('click', handleUploadClick));
-            newItem.querySelectorAll('.history-btn').forEach(btn => btn.addEventListener('click', handleHistoryClick));
+            newItem.querySelectorAll('.library-btn').forEach(btn => btn.addEventListener('click', handleBrowseLibraryClick));
         }
         
         async function handleSaveVocabulary() {
@@ -3016,14 +3053,14 @@
                     <div class="font-semibold mb-2"><i class="fas ${value.icon} text-purple-500 mr-2"></i><span>${getTranslation(value.label)}</span></div>
                     <div class="upload-container">
                         <input type="text" id="${key}-url" class="input-field mb-0 sound-url-input" placeholder="${getTranslation('soundUrlPlaceholder')}" value="${currentSounds[key]?.url || ''}">
-                        <button type="button" class="btn btn-primary upload-btn upload-btn-sm" data-type="audio"><i class="fas fa-upload"></i></button>
-                        <button type="button" class="btn btn-secondary history-btn history-btn-sm" data-type="audio"><i class="fas fa-history"></i></button>
+                        <button type="button" class="btn btn-primary upload-btn upload-btn-sm" data-type="audio" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                        <button type="button" class="btn btn-secondary library-btn library-btn-sm" data-type="audio" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
                     </div>
                     <input type="range" id="${key}-volume" class="w-full mt-2" min="0" max="1" step="0.1" value="${currentSounds[key]?.volume !== undefined ? currentSounds[key].volume : 1}">
                 </div>`).join('');
             
             container.querySelectorAll('.upload-btn').forEach(btn => btn.addEventListener('click', handleUploadClick));
-            container.querySelectorAll('.history-btn').forEach(btn => btn.addEventListener('click', handleHistoryClick));
+            container.querySelectorAll('.library-btn').forEach(btn => btn.addEventListener('click', handleBrowseLibraryClick));
 
             updateLanguage();
         }
@@ -3258,8 +3295,8 @@
                 <input type="text" id="activity-question-text" placeholder="Question Text (optional)" class="input-field">
                 <div class="upload-container">
                     <input type="text" id="activity-question-audio" placeholder="${getTranslation('questionAudio')}" class="input-field mb-0">
-                    <button type="button" class="btn btn-primary upload-btn" data-type="audio"><i class="fas fa-upload"></i></button>
-                    <button type="button" class="btn btn-secondary history-btn" data-type="audio"><i class="fas fa-history"></i></button>
+                    <button type="button" class="btn btn-primary upload-btn" data-type="audio" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                    <button type="button" class="btn btn-secondary library-btn" data-type="audio" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
                 </div>
                 <div class="flex items-center gap-2 my-4"><input type="checkbox" id="activity-question-tts"><label for="activity-question-tts">${getTranslation('useTTS')}</label></div>
                 <hr class="my-4">
@@ -3274,8 +3311,8 @@
                     formHtml += `<p class="text-sm text-gray-500 my-2">For each option, fill in the Text OR the Image URL.</p>
                         <div class="upload-container">
                             <input type="text" id="mc-image-url" placeholder="Optional: Main Question Image URL" class="input-field mb-0">
-                            <button type="button" class="btn btn-primary upload-btn" data-type="image"><i class="fas fa-upload"></i></button>
-                            <button type="button" class="btn btn-secondary history-btn" data-type="image"><i class="fas fa-history"></i></button>
+                            <button type="button" class="btn btn-primary upload-btn" data-type="image" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                            <button type="button" class="btn btn-secondary library-btn" data-type="image" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
                         </div>
                         <div id="mc-options-container" class="space-y-3 mt-3"></div> 
                         <button type="button" id="add-mc-option-btn" class="btn btn-secondary w-full mt-2">Add Option</button>`;
@@ -3284,13 +3321,13 @@
                      formHtml += `<input type="text" id="pronounce-word" placeholder="Word to pronounce" class="input-field">
                         <div class="upload-container my-2">
                            <input type="text" id="pronounce-image-url" placeholder="Optional: Image URL" class="input-field mb-0">
-                           <button type="button" class="btn btn-primary upload-btn" data-type="image"><i class="fas fa-upload"></i></button>
-                           <button type="button" class="btn btn-secondary history-btn" data-type="image"><i class="fas fa-history"></i></button>
+                           <button type="button" class="btn btn-primary upload-btn" data-type="image" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                           <button type="button" class="btn btn-secondary library-btn" data-type="image" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
                         </div>
                         <div class="upload-container">
                             <input type="text" id="pronounce-audio-url" placeholder="Audio URL for 'listen' button" class="input-field mb-0">
-                            <button type="button" class="btn btn-primary upload-btn" data-type="audio"><i class="fas fa-upload"></i></button>
-                            <button type="button" class="btn btn-secondary history-btn" data-type="audio"><i class="fas fa-history"></i></button>
+                            <button type="button" class="btn btn-primary upload-btn" data-type="audio" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                            <button type="button" class="btn btn-secondary library-btn" data-type="audio" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
                         </div>`;
                     break;
                  case 'complete_sentence':
@@ -3310,7 +3347,7 @@
             }
             container.innerHTML = commonHtml + formHtml;
             container.querySelectorAll('.upload-btn').forEach(btn => btn.addEventListener('click', handleUploadClick));
-            container.querySelectorAll('.history-btn').forEach(btn => btn.addEventListener('click', handleHistoryClick));
+            container.querySelectorAll('.library-btn').forEach(btn => btn.addEventListener('click', handleBrowseLibraryClick));
             
             if (type === 'multiple_choice') {
                 addMcOption(null, 0, true);
@@ -3341,12 +3378,12 @@
                 <input type="text" placeholder="Option Text" class="input-field mb-2 mc-option-text" value="${(optionData?.type === 'text' ? optionData.value : '') || ''}">
                 <div class="upload-container">
                     <input type="text" placeholder="Option Image URL" class="input-field mb-0 mc-option-image" value="${(optionData?.type === 'image' ? optionData.value : '') || ''}">
-                    <button type="button" class="btn btn-primary upload-btn upload-btn-sm" data-type="image"><i class="fas fa-upload"></i></button>
-                    <button type="button" class="btn btn-secondary history-btn history-btn-sm" data-type="image"><i class="fas fa-history"></i></button>
+                    <button type="button" class="btn btn-primary upload-btn upload-btn-sm" data-type="image" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                    <button type="button" class="btn btn-secondary library-btn library-btn-sm" data-type="image" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
                 </div>`;
             optionsContainer.appendChild(newOption);
             newOption.querySelectorAll('.upload-btn').forEach(btn => btn.addEventListener('click', handleUploadClick));
-            newOption.querySelectorAll('.history-btn').forEach(btn => btn.addEventListener('click', handleHistoryClick));
+            newOption.querySelectorAll('.library-btn').forEach(btn => btn.addEventListener('click', handleBrowseLibraryClick));
             newOption.querySelector('.remove-mc-option-btn').addEventListener('click', () => newOption.remove());
         }
         
@@ -3367,8 +3404,8 @@
                         </select>
                         <div class="upload-container">
                             <input type="text" placeholder="${getTranslation('itemValue')}" class="input-field mb-0 match-prompt-value" value="${pairData?.prompt.value || ''}">
-                            <button type="button" class="btn btn-primary upload-btn upload-btn-sm" data-type="image"><i class="fas fa-upload"></i></button>
-                            <button type="button" class="btn btn-secondary history-btn history-btn-sm" data-type="image"><i class="fas fa-history"></i></button>
+                            <button type="button" class="btn btn-primary upload-btn upload-btn-sm" data-type="image" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                            <button type="button" class="btn btn-secondary library-btn library-btn-sm" data-type="image" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
                         </div>
                     </div>
                     <div>
@@ -3378,8 +3415,8 @@
                         </select>
                          <div class="upload-container">
                             <input type="text" placeholder="${getTranslation('itemValue')}" class="input-field mb-0 match-answer-value" value="${pairData?.answer.value || ''}">
-                            <button type="button" class="btn btn-primary upload-btn upload-btn-sm" data-type="image"><i class="fas fa-upload"></i></button>
-                            <button type="button" class="btn btn-secondary history-btn history-btn-sm" data-type="image"><i class="fas fa-history"></i></button>
+                            <button type="button" class="btn btn-primary upload-btn upload-btn-sm" data-type="image" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                            <button type="button" class="btn btn-secondary library-btn library-btn-sm" data-type="image" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
                         </div>
                     </div>
                 </div>
@@ -3387,7 +3424,7 @@
             `;
             container.appendChild(newPair);
             newPair.querySelectorAll('.upload-btn').forEach(btn => btn.addEventListener('click', handleUploadClick));
-            newPair.querySelectorAll('.history-btn').forEach(btn => btn.addEventListener('click', handleHistoryClick));
+            newPair.querySelectorAll('.library-btn').forEach(btn => btn.addEventListener('click', handleBrowseLibraryClick));
             newPair.querySelector('.remove-match-pair-btn').addEventListener('click', () => newPair.remove());
         }
         
@@ -3575,7 +3612,7 @@
                 showToast('githubConfigWarning', 'error');
                 return;
             }
-            activeUrlInput = button.previousElementSibling;
+            activeUrlInput = button.nextElementSibling.tagName === 'BUTTON' ? button.previousElementSibling : button.parentElement.querySelector('input');
             const fileInput = document.createElement('input');
             fileInput.type = 'file';
             const type = button.dataset.type;
@@ -3639,7 +3676,7 @@
             return data.content.download_url;
         }
 
-        async function handleHistoryClick(e) {
+        async function handleBrowseLibraryClick(e) {
             if (!isGitHubConfigured()) {
                 showToast('githubConfigWarning', 'error');
                 return;
@@ -3647,8 +3684,8 @@
             activeUrlInput = e.currentTarget.previousElementSibling.previousElementSibling;
             const type = e.currentTarget.dataset.type;
             
-            const modal = document.getElementById('file-history-modal');
-            const grid = document.getElementById('file-history-grid');
+            const modal = document.getElementById('media-library-modal');
+            const grid = document.getElementById('media-library-grid');
             grid.innerHTML = '<div class="loader"></div>';
             modal.classList.remove('hidden');
 
